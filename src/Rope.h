@@ -6,6 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "scene/Voxel.h"
 #include "Node.h"
+#include <BSpline.h>
 
 class Rope {
 public:

@@ -98,7 +98,7 @@ void Rope::bSplineCurver() {
     }
 
     this->controlPoints = controlPoints;
-    cout << controlPoints.size() << endl;
+
 }
 
 // Simulate a timestep of the rope

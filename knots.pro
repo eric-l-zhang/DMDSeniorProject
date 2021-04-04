@@ -47,10 +47,13 @@ address_sanitizer {
 }
 
 HEADERS += \
+    src/BSpline.h \
     src/Camera.h \
+    src/Curve.h \
     src/FileReader.h \
     src/Node.h \
     src/Rope.h \
+    src/Vector.h \
     src/drawable.h \
     src/glwidget277.h \
     src/la.h \
@@ -69,10 +72,13 @@ HEADERS += \
     src/utils.h
 
 SOURCES += \
+    src/BSpline.cpp \
     src/Camera.cpp \
+    src/Curve.cpp \
     src/FileReader.cpp \
     src/Node.cpp \
     src/Rope.cpp \
+    src/Vector.cpp \
     src/drawable.cpp \
     src/glwidget277.cpp \
     src/la.cpp \
