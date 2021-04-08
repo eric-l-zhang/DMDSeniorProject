@@ -157,7 +157,7 @@ void MyGL::paintGL()
     // prog_flat.draw(*this, yourNonPointerGeometry);
 #endif
 
-    line.updatePoints(rope->controlPoints);
+    line.updatePoints(rope->interpPoints);
     line.create();
     prog_flat.drawLine(line);
 }

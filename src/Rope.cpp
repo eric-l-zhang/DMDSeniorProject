@@ -35,7 +35,7 @@ Rope::Rope() {
     counter = 0;
 
     controlPoints = vector<glm::vec4>();
-
+    interpPoints = vector<glm::vec4>();
 }
 
 void Rope::printVoxels() {
@@ -97,8 +97,56 @@ void Rope::bSplineCurver() {
         currentVoxel = vNext;
     }
 
-    this->controlPoints = controlPoints;
+    // De Boor's Methodology:
+    BSpline* curve = new BSpline();
+    vector<glm::vec3> inputPoints;
+    for (int i = 0; i < (int) controlPoints.size(); i++) {
+        //printVector(controlPoints[i].x, controlPoints[i].y, controlPoints[i].z, true);
+        inputPoints.push_back(glm::vec3(controlPoints[i]));
+    }
+    inputPoints.push_back(glm::vec3(controlPoints[0]));
 
+    int degree = 3;
+    std::vector<int> knots = {};
+    vector<glm::vec4> interpNodes;
+
+    for(double t = 0; t < 1; t += 0.001) {
+        glm::vec3 tick = curve->deBoor(t, degree, inputPoints, knots);
+        interpNodes.push_back(glm::vec4(tick, 1.f));
+        // cout << "[" << tick.x << "], " << "[" << tick.y << "], " << "[" << tick.z << "]" << endl;
+    }
+    this->interpPoints = interpNodes;
+
+    delete curve;
+
+    /* this->interpPoints = controlPoints;
+    vector<glm::vec4> interpNodes;
+
+    for (int i = 0; i < (int) controlPoints.size(); i = i + 3) {
+        Curve* curve = new BSpline();
+        curve->set_steps(100); // generate 100 interpolate points between the last 4 way points
+        int p1 = i;
+        int p2 = (i + 1) % controlPoints.size();
+        int p3 = (i + 2) % controlPoints.size();
+        int p4 = (i + 3) % controlPoints.size();
+
+        if (i == (int) controlPoints.size() - 2) {
+
+        }
+
+        curve->add_way_point(Vector(controlPoints[p1].x, controlPoints[p1].y, controlPoints[p1].z));
+        curve->add_way_point(Vector(controlPoints[p2].x, controlPoints[p2].y, controlPoints[p2].z));
+        curve->add_way_point(Vector(controlPoints[p3].x, controlPoints[p3].y, controlPoints[p3].z));
+        curve->add_way_point(Vector(controlPoints[p4].x, controlPoints[p4].y, controlPoints[p4].z));
+
+
+        for (int i = 0; i < curve->node_count(); ++i) {
+            // std::cout << "node #" << i << ": " << curve->node(i).toString() << " (length so far: " << curve->length_from_starting_point(i) << ")" << std::endl;
+            glm::vec4 node = glm::vec4(curve->node(i).x, curve->node(i).y, curve->node(i).z, 1.f);
+            interpNodes.push_back(node);
+        }
+    }
+    this->controlPoints = interpNodes;*/
 }
 
 // Simulate a timestep of the rope

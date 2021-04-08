@@ -89,6 +89,7 @@ public:
     void printVoxels();
     void bSplineCurver();
     vector<glm::vec4> controlPoints;
+    vector<glm::vec4> interpPoints;
 
 };
 
