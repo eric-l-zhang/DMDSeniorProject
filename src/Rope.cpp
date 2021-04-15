@@ -1,8 +1,13 @@
 #include "Rope.h"
+#include <QFile>
+#include <QString>
+#include <QTextStream>
+#include <QDir>
+
 
 static const float PI = 3.141592653589f;
 
-static void printVector(int x, int y, int z, bool endLine) {
+static void printVector(float x, float y, float z, bool endLine) {
 	
 	cout << x << ", " << y << ", " << z;
 	if (endLine) {
@@ -34,7 +39,7 @@ Rope::Rope() {
 
     counter = 0;
 
-    controlPoints = vector<glm::vec4>();
+    controlPoints = vector<glm::vec3>();
     interpPoints = vector<glm::vec4>();
 }
 
@@ -55,7 +60,7 @@ void Rope::printVoxels() {
     cout << "Count: " << count << endl;
 }
 
-void Rope::bSplineCurver() {
+vector<glm::vec3> Rope::bSplineCurver() {
     vector<glm::vec4> controlPoints;
     Voxel* firstVoxel = nullptr;
 
@@ -77,6 +82,7 @@ void Rope::bSplineCurver() {
 
     bool firstTime = true;
 
+
     while (currentVoxel != firstVoxel || firstTime) {
         vector<Voxel*> neighbors = getNeighbors(currentVoxel);
         Voxel* vNext = nullptr;
@@ -97,15 +103,44 @@ void Rope::bSplineCurver() {
         currentVoxel = vNext;
     }
 
-    // De Boor's Methodology:
-    BSpline* curve = new BSpline();
     vector<glm::vec3> inputPoints;
     for (int i = 0; i < (int) controlPoints.size(); i++) {
-        //printVector(controlPoints[i].x, controlPoints[i].y, controlPoints[i].z, true);
         inputPoints.push_back(glm::vec3(controlPoints[i]));
     }
+
+    // add starting point to connect it back together?
     inputPoints.push_back(glm::vec3(controlPoints[0]));
 
+    /* Writing to File */
+    QString file = "../../../../qt-knots/controlPoints.txt";
+    QFile outputFile(file);
+    outputFile.open(QIODevice::WriteOnly | QIODevice::Append);
+
+    if(!outputFile.isOpen())
+    {
+        //alert that file did not open
+        std::cout << "FILE WRITING ERROR" << std::endl;
+    }
+    QTextStream outStream(&outputFile);
+    QString str = "Knot Step \n";
+    outStream << str;
+    for (glm::vec3 p : inputPoints) {
+        QString x = QString::number(p.x);
+        QString y = QString::number(p.y);
+        QString z = QString::number(p.z);
+        QString point = x + " " + y + " " + z + "\n";
+        outStream << point;
+    }
+    outputFile.close();
+
+    return inputPoints;
+}
+
+
+void Rope::getCurve(vector<glm::vec3> inputPoints) {
+
+    /* De Boor's Methodology: */
+    BSpline* curve = new BSpline();
     int degree = 3;
     std::vector<int> knots = {};
     vector<glm::vec4> interpNodes;
@@ -255,7 +290,7 @@ void Rope::simulate() {
 
 			changing = false;
 
-		// If it's not changing anymore, double the resolution
+        // If it's not changing anymore, double the resolution
 		} else {
 
 			cout << "Time to double the resolution!" << endl;
@@ -263,8 +298,45 @@ void Rope::simulate() {
 			changing = true;
 
 		}
-	}
+    }
 
+    // generation of curve TODO:: do this when not changing = false or something?
+    vector<glm::vec3> newControlPoints = bSplineCurver();
+
+//    vector<glm::vec3> differentPoints;
+//    for (glm::vec3 x : this->controlPoints) {
+//        if(std::find(newControlPoints.begin(), newControlPoints.end(), x) != newControlPoints.end()) {
+//            // contains x
+
+//        } else {
+//            // does not contain x
+//            differentPoints.push_back(x);
+//        }
+//    }
+
+//    //std::cout << "Different Points: " << differentPoints.size() << std::endl;
+//    for (glm::vec3 p : differentPoints) {
+//        //std::cout << "Old Point: ";
+//        //printVector(p.x, p.y, p.z, true);
+
+//        glm::vec3 closest = newControlPoints[0];
+//        glm::vec3 secondClosest = newControlPoints[1];
+//        // get the 2 points in newControlPoints that is closest to each old point that has disappeared
+//        for (int i = 2; i < (int) newControlPoints.size(); i++) {
+//            glm::vec3 newP = newControlPoints[i];
+//            if (glm::distance(p, newP) < glm::distance(p, closest)) {
+//                secondClosest = closest;
+//                closest = newP;
+//            }
+//            else if (glm::distance(p, newP) < glm::distance(p, secondClosest)) {
+//                secondClosest = newP;
+//            }
+//        }
+//    }
+
+//    getCurve(newControlPoints);
+
+//    this->controlPoints = newControlPoints;
 }
 
 // ******************* XY Plane ********************** //

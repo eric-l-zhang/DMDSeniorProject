@@ -6,7 +6,8 @@
 #include <QApplication>
 #include <QKeyEvent>
 #include "FileReader.h"
-
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 
 MyGL::MyGL(QWidget *parent)
@@ -239,9 +240,12 @@ void MyGL::keyPressEvent(QKeyEvent *e)
         case Qt::Key_P:
             rope->printVoxels();
             break;
-        case Qt::Key_B:
-            rope->bSplineCurver();
+        case Qt::Key_B: {
+            vector<glm::vec3> newControlPoints = rope->bSplineCurver();
+            rope->getCurve(newControlPoints);
+            rope->controlPoints = newControlPoints;
             break;
+        }
         case 'n':
             index++;
             currentNode->color = tempColor;
