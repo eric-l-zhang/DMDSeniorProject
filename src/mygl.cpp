@@ -243,7 +243,7 @@ void MyGL::keyPressEvent(QKeyEvent *e)
         case Qt::Key_B: {
             vector<glm::vec3> newControlPoints = rope->bSplineCurver();
             rope->getCurve(newControlPoints);
-            rope->controlPoints = newControlPoints;
+            rope->writeOut(newControlPoints);
             break;
         }
         case 'n':

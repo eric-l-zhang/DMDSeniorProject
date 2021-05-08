@@ -92,6 +92,8 @@ public:
     vector<glm::vec3> controlPoints;
     vector<glm::vec4> interpPoints;
 
+    void writeOut(vector<glm::vec3> inputPoints);
+
 };
 
 #endif

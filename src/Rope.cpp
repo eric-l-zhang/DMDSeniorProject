@@ -85,7 +85,11 @@ vector<glm::vec3> Rope::bSplineCurver() {
 
     while (currentVoxel != firstVoxel || firstTime) {
         vector<Voxel*> neighbors = getNeighbors(currentVoxel);
+        if (neighbors.size() > 2) {
+            std::cout << "NEIGHBORS MORE THAN 2: #" << neighbors.size() << std::endl;
+        }
         Voxel* vNext = nullptr;
+        // what if there are more than 2 neigbors?
         for (Voxel* v : neighbors) {
             if (v != prevVoxel) {
                 vNext = v;
@@ -111,6 +115,10 @@ vector<glm::vec3> Rope::bSplineCurver() {
     // add starting point to connect it back together?
     inputPoints.push_back(glm::vec3(controlPoints[0]));
 
+    return inputPoints;
+}
+
+void Rope::writeOut(vector<glm::vec3> inputPoints) {
     /* Writing to File */
     QString file = "../../../../qt-knots/controlPoints.txt";
     QFile outputFile(file);
@@ -133,7 +141,7 @@ vector<glm::vec3> Rope::bSplineCurver() {
     }
     outputFile.close();
 
-    return inputPoints;
+    this->controlPoints = inputPoints;
 }
 
 
@@ -301,42 +309,43 @@ void Rope::simulate() {
     }
 
     // generation of curve TODO:: do this when not changing = false or something?
-    vector<glm::vec3> newControlPoints = bSplineCurver();
+    /*vector<glm::vec3> newControlPoints = bSplineCurver();
+    std::cout << "Number of Points: " << newControlPoints.size() << std::endl;
 
-//    vector<glm::vec3> differentPoints;
-//    for (glm::vec3 x : this->controlPoints) {
-//        if(std::find(newControlPoints.begin(), newControlPoints.end(), x) != newControlPoints.end()) {
-//            // contains x
+    vector<glm::vec3> differentPoints;
+    for (glm::vec3 x : this->controlPoints) {
+        if(std::find(newControlPoints.begin(), newControlPoints.end(), x) != newControlPoints.end()) {
+            // contains x
 
-//        } else {
-//            // does not contain x
-//            differentPoints.push_back(x);
-//        }
-//    }
+        } else {
+            // does not contain x
+            differentPoints.push_back(x);
+        }
+    }
 
-//    //std::cout << "Different Points: " << differentPoints.size() << std::endl;
-//    for (glm::vec3 p : differentPoints) {
-//        //std::cout << "Old Point: ";
-//        //printVector(p.x, p.y, p.z, true);
+    //std::cout << "Different Points: " << differentPoints.size() << std::endl;
+    for (glm::vec3 p : differentPoints) {
+        //std::cout << "Old Point: ";
+        //printVector(p.x, p.y, p.z, true);
 
-//        glm::vec3 closest = newControlPoints[0];
-//        glm::vec3 secondClosest = newControlPoints[1];
-//        // get the 2 points in newControlPoints that is closest to each old point that has disappeared
-//        for (int i = 2; i < (int) newControlPoints.size(); i++) {
-//            glm::vec3 newP = newControlPoints[i];
-//            if (glm::distance(p, newP) < glm::distance(p, closest)) {
-//                secondClosest = closest;
-//                closest = newP;
-//            }
-//            else if (glm::distance(p, newP) < glm::distance(p, secondClosest)) {
-//                secondClosest = newP;
-//            }
-//        }
-//    }
+        glm::vec3 closest = newControlPoints[0];
+        glm::vec3 secondClosest = newControlPoints[1];
+        // get the 2 points in newControlPoints that is closest to each old point that has disappeared
+        for (int i = 2; i < (int) newControlPoints.size(); i++) {
+            glm::vec3 newP = newControlPoints[i];
+            if (glm::distance(p, newP) < glm::distance(p, closest)) {
+                secondClosest = closest;
+                closest = newP;
+            }
+            else if (glm::distance(p, newP) < glm::distance(p, secondClosest)) {
+                secondClosest = newP;
+            }
+        }
+    }
 
-//    getCurve(newControlPoints);
+    getCurve(newControlPoints);
 
-//    this->controlPoints = newControlPoints;
+    this->controlPoints = newControlPoints;*/
 }
 
 // ******************* XY Plane ********************** //
@@ -641,16 +650,20 @@ bool Rope::pushDir(int sign, int third) {
 
 						bool change = checkComponent(sign, third);
 						if (change) {
+
+                            // generation of curve TODO:: do this when not changing = false or something?
+                            vector<glm::vec3> newControlPoints = bSplineCurver();
+                            if (newControlPoints.size() != this->controlPoints.size()) {
+                                std::cout << "Number of Points: " << newControlPoints.size() << std::endl;
+                                writeOut(newControlPoints);
+                            }
+
 							return true;
 						}
 
 					}
-
-
 				}
 			}
-
-
 		}
 
 	} else {
@@ -679,11 +692,18 @@ bool Rope::pushDir(int sign, int third) {
 
 						bool change = checkComponent(sign, third);
 						if (change) {
+
+                            // generation of curve TODO:: do this when not changing = false or something?
+                            vector<glm::vec3> newControlPoints = bSplineCurver();
+                            if (newControlPoints.size() != this->controlPoints.size()) {
+                                std::cout << "Number of Points: " << newControlPoints.size() << std::endl;
+                                writeOut(newControlPoints);
+                            }
+
 							return true;
 						}
 
 					}
-				
 				}
 			}
 
@@ -783,17 +803,17 @@ bool Rope::checkComponent(int sign, int axis) {
 			}
 
 			//// Check for edge adjacencies too
-			//Voxel* nextOne  = voxelBuffer[thisVoxel->x + (sign)][thisVoxel->y][thisVoxel->z];
-			//Voxel* nextNext = voxelBuffer[thisVoxel->x + (2 * sign)][thisVoxel->y][thisVoxel->z];
-			//
-			//vector<Voxel*> nextOneNeighbors = getNeighbors(nextOne);
-			//if (nextOneNeighbors.size() > 2) {
-			//	return false;
-			//}
-			//vector<Voxel*> nextNextNeighbors = getNeighbors(nextNext);
-			//if (nextNextNeighbors.size() > 2) {
-			//	return false;
-			//}
+            //Voxel* nextOne  = voxelBuffer[thisVoxel->x + (sign)][thisVoxel->y][thisVoxel->z];
+            //Voxel* nextNext = voxelBuffer[thisVoxel->x + (2 * sign)][thisVoxel->y][thisVoxel->z];
+            //
+            //vector<Voxel*> nextOneNeighbors = getNeighbors(nextOne);
+            //if (nextOneNeighbors.size() > 2) {
+            //	return false;
+            //}
+            //vector<Voxel*> nextNextNeighbors = getNeighbors(nextNext);
+            //if (nextNextNeighbors.size() > 2) {
+            //	return false;
+            //}
 
 		}
 
@@ -838,17 +858,17 @@ bool Rope::checkComponent(int sign, int axis) {
 
 
 			//// Check for edge adjacencies too
-			//Voxel* nextOne  = voxelBuffer[thisVoxel->x][thisVoxel->y + sign][thisVoxel->z];
-			//Voxel* nextNext = voxelBuffer[thisVoxel->x][thisVoxel->y + (2 * sign)][thisVoxel->z];
-			//
-			//vector<Voxel*> nextOneNeighbors = getNeighbors(nextOne);
-			//if (nextOneNeighbors.size() > 2) {
-			//	return false;
-			//}
-			//vector<Voxel*> nextNextNeighbors = getNeighbors(nextNext);
-			//if (nextNextNeighbors.size() > 2) {
-			//	return false;
-			//}
+            //Voxel* nextOne  = voxelBuffer[thisVoxel->x][thisVoxel->y + sign][thisVoxel->z];
+            //Voxel* nextNext = voxelBuffer[thisVoxel->x][thisVoxel->y + (2 * sign)][thisVoxel->z];
+            //
+            //vector<Voxel*> nextOneNeighbors = getNeighbors(nextOne);
+            //if (nextOneNeighbors.size() > 2) {
+            //	return false;
+            //}
+            //vector<Voxel*> nextNextNeighbors = getNeighbors(nextNext);
+            //if (nextNextNeighbors.size() > 2) {
+            //	return false;
+            //}
 		}
 
 		// If we've made it this far, we can push it
@@ -891,17 +911,17 @@ bool Rope::checkComponent(int sign, int axis) {
 			}
 
 			//// Check for edge adjacencies too
-			//Voxel* nextOne  = voxelBuffer[thisVoxel->x][thisVoxel->y][thisVoxel->z + sign];
-			//Voxel* nextNext = voxelBuffer[thisVoxel->x][thisVoxel->y][thisVoxel->z + (sign * 2)];
-			//
-			//vector<Voxel*> nextOneNeighbors = getNeighbors(nextOne);
-			//if (nextOneNeighbors.size() > 2) {
-			//	return false;
-			//}
-			//vector<Voxel*> nextNextNeighbors = getNeighbors(nextNext);
-			//if (nextNextNeighbors.size() > 2) {
-			//	return false;
-			//}
+            //Voxel* nextOne  = voxelBuffer[thisVoxel->x][thisVoxel->y][thisVoxel->z + sign];
+            //Voxel* nextNext = voxelBuffer[thisVoxel->x][thisVoxel->y][thisVoxel->z + (sign * 2)];
+            //
+            //vector<Voxel*> nextOneNeighbors = getNeighbors(nextOne);
+            //if (nextOneNeighbors.size() > 2) {
+            //	return false;
+            //}
+            //vector<Voxel*> nextNextNeighbors = getNeighbors(nextNext);
+            //if (nextNextNeighbors.size() > 2) {
+            //	return false;
+            //}
 
 
 		}
@@ -945,25 +965,28 @@ bool Rope::push(int third) {
 
 	bool changing = pushDir(1, axis2);
 	while (changing) {
-		changing = pushDir(1, axis2);
+        changing = pushDir(1, axis2);
 		return true;
 	}
 
 	changing = pushDir(-1, axis1);
 	while (changing) {
+
 		changing = pushDir(-1, axis1);
 		return true;
 	}
 
 	changing = pushDir(-1, axis2);
 	while (changing) {
-		changing = pushDir(-1, axis2);
+        changing = pushDir(-1, axis2);
+
 		return true;
 	}
 
 	changing = pushDir(1, axis1);
 	while (changing) {
-		changing = pushDir(1, axis1);
+        changing = pushDir(1, axis1);
+
 		return true;
 	}
 
